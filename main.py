@@ -1,9 +1,10 @@
-import yaml
-import sys
 import os
 import subprocess
+import sys
 from pathlib import Path
-from typing import Any, Tuple, NamedTuple, TypeGuard
+from typing import Any, NamedTuple, Tuple, TypeGuard
+
+import yaml
 
 
 def main():
