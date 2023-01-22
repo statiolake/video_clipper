@@ -7,13 +7,17 @@ from typing import Any, NamedTuple, Tuple, TypeGuard
 import yaml
 
 
+def escape_path(path: Path):
+    return str(path).replace("\\", "\\\\")
+
+
 def main():
     if len(sys.argv) == 1:
         print("please specify the yaml file", file=sys.stderr)
         return
 
-    with open(sys.argv[1]) as f:
-        config = Config(yaml.safe_load(f))
+    with open(sys.argv[1]) as filelist:
+        config = Config(yaml.safe_load(filelist))
 
     for video in config.videos:
         path = video.path
@@ -35,7 +39,7 @@ def main():
             if duration < 0:
                 raise RuntimeError("duration must be positive")
 
-            subprocess.run(
+            subprocess.check_call(
                 [
                     "ffmpeg",
                     "-ss",
@@ -50,16 +54,22 @@ def main():
                 ]
             )
 
-        with open("filelist.txt", "w") as f:
+        with open("filelist.txt", "w") as filelist:
             for index in range(len(video.spans)):
-                print("file", temp_path_for(index), file=f)
+                print(
+                    "file",
+                    f"'{escape_path(temp_path_for(index))}'",
+                    file=filelist,
+                )
 
         # 結合
-        subprocess.run(
+        subprocess.check_call(
             [
                 "ffmpeg",
                 "-f",
                 "concat",
+                "-safe",
+                "0",
                 "-i",
                 "filelist.txt",
                 "-c",
